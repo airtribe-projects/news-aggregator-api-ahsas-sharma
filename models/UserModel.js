@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 // sub schema to store the preferences for each user
-const userPreferencesSchema = new mongoose.Schema(
+const UserPreferencesSchema = new mongoose.Schema(
   {
     topics: {
       type: [String],
@@ -47,10 +47,10 @@ const userPreferencesSchema = new mongoose.Schema(
       default: [],
     },
   },
-  { _id: false }
+  { _id: false, strict: "throw" }
 );
 
-const userSchema = new mongoose.Schema(
+const UserSchema = new mongoose.Schema(
   {
     email: {
       type: String,
@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     preferences: {
-      type: userPreferencesSchema,
+      type: UserPreferencesSchema,
       default: () => ({}),
     },
   },
@@ -73,4 +73,4 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", UserSchema);
