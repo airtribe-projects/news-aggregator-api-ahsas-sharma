@@ -14,6 +14,12 @@ async function verifyPassword(plainTextPassword, hashedPassword) {
   return bcrypt.compareSync(plainTextPassword, hashedPassword);
 }
 
+function generateToken(userId) {
+  return jwt.sign({ userId: userId }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
+}
+
 async function registerUser(email, password) {
   try {
     const newUser = UserModel({
@@ -36,8 +42,7 @@ async function registerUser(email, password) {
 }
 
 async function loginUser(email, password) {
-  let user = await UserModel.findOne({ email: email });
-  console.log("🚀 ~ login ~ user:", user);
+  const user = await UserModel.findOne({ email: email });
 
   if (!user) {
     return {
@@ -58,10 +63,19 @@ async function loginUser(email, password) {
   return { success: true, user, token };
 }
 
-function generateToken(userId) {
-  return jwt.sign({ userId: userId }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+async function findUserById(userId) {
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+    return { success: true, user };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
 }
 
 module.exports = {
@@ -69,4 +83,5 @@ module.exports = {
   registerUser,
   loginUser,
   generateToken,
+  findUserById,
 };

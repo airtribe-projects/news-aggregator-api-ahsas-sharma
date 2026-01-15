@@ -1,4 +1,6 @@
 require("dotenv").config();
+const NEWS_API_ENDPOINT =
+  "https://eventregistry.org/api/v1/article/getArticles";
 
 async function getTestNews(req, res) {
   try {
@@ -6,11 +8,11 @@ async function getTestNews(req, res) {
     if (!apiKey) {
       return res.status(500).json({
         error:
-          "Event Registry PAI key is not configured properly. Check the .env.example file for reference.",
+          "Event Registry API key is not configured properly. Check the .env.example file for reference.",
       });
     }
     const keyword = req.query.keyword || "Donald Trump";
-    const url = new URL("https://eventregistry.org/api/v1/article/getArticles");
+    const url = new URL(NEWS_API_ENDPOINT);
     url.searchParams.append("apiKey", apiKey);
     url.searchParams.append("keyword", keyword);
     url.searchParams.append("lang", "eng");

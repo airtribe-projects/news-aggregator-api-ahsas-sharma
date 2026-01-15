@@ -13,12 +13,10 @@ async function register(req, res) {
 
     const result = await registerUser(email, password);
     if (!result.success) {
-      console.log(result.error);
-
-      const errString = String(result.error);
-      if (errString.includes("E11000")) {
+      if (result.error.includes("E11000")) {
         return res.status(400).json({
-          message: "Email already registered. Please login with your password.",
+          message:
+            "Email already registered. Please login using your password.",
         });
       }
 
