@@ -1,41 +1,30 @@
-require("dotenv").config();
-const NEWS_API_ENDPOINT =
-  "https://eventregistry.org/api/v1/article/getArticles";
+const { fetchArticles } = require("../utils/newsUtils");
+const { findUserById } = require("../utils/userUtils");
 
-async function getTestNews(req, res) {
+async function getNews(req, res) {
   try {
-    const apiKey = process.env.ER_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({
-        error:
-          "Event Registry API key is not configured properly. Check the .env.example file for reference.",
-      });
-    }
-    const keyword = req.query.keyword || "Donald Trump";
-    const url = new URL(NEWS_API_ENDPOINT);
-    url.searchParams.append("apiKey", apiKey);
-    url.searchParams.append("keyword", keyword);
-    url.searchParams.append("lang", "eng");
-    url.searchParams.append("articlesCount", "100");
-    url.searchParams.append("articlesSortBy", "date");
-    url.searchParams.append("resultType", "articles");
-    console.log("🚀 ~ getTestNews ~ url:", url.href);
-    const response = await fetch(url);
+    const result = await findUserById(req.payload.userId);
 
-    if (!response.ok) {
-      throw new Error(`Event Registry API error: ${response.status}`);
+    if (!result.success) {
+      return res.status(401).json({ message: result.error });
     }
-    const data = await response.json();
+
+    let newsResult = await fetchArticles(result.user.preferences || {});
+
+    if (!newsResult.success) {
+      return res.status(500).json({ error: newsResult.error });
+    }
 
     res.status(200).json({
-      articles: data.articles?.results || [],
+      newsResult,
     });
   } catch (error) {
-    res.status(404).json({ error: "Server Error" });
-    console.log("Server Error : ", error);
+----------------------------🚀");
+
+    res.status(500).json({ error: "Internal server error" });
   }
 }
 
 module.exports = {
-  getTestNews,
+  getNews,
 };

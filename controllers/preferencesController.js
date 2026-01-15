@@ -1,4 +1,4 @@
-const { findUserById } = require("../utils/userUtils");
+const { findUserById, updateUserPreferences } = require("../utils/userUtils");
 
 async function getPreferences(req, res) {
   try {
@@ -21,38 +21,24 @@ async function updatePreferences(req, res) {
       return res.status(401).json({ message: result.error });
     }
 
-    const user = result.user;
-    const changePayload = req.body;
+    const updateResult = await updateUserPreferences(result.user, req.body);
 
-    const allowedKeys = Object.keys(user.preferences.schema.paths);
-
-    const invalidKeys = Object.keys(changePayload).filter(
-      (key) => !allowedKeys.includes(key)
-    );
-
-    if (invalidKeys.length > 0) {
-      return res.status(400).json({
-        message: "Invalid preference keys provided",
-        invalidKeys,
+    if (!updateResult.success) {
+      const statusCode = updateResult.message ? 400 : 500;
+      return res.status(statusCode).json({
+        message: updateResult.error,
+        ...(updateResult.invalidKeys && {
+          invalidKeys: updateResult.invalidKeys,
+        }),
+        ...(updateResult.message && { details: updateResult.message }),
       });
     }
 
-    Object.keys(changePayload).forEach((key) => {
-      user.preferences[key] = changePayload[key];
-    });
-
-    await user.save();
     return res.status(200).json({
-      message: "User preferences updated succesfully!",
-      preferences: user.preferences,
+      message: "User preferences updated successfully!",
+      preferences: updateResult.preferences,
     });
   } catch (error) {
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        message: "Invalid preference values",
-        error: error.message,
-      });
-    }
     res.status(500).json({
       message: "Internal server error",
     });
