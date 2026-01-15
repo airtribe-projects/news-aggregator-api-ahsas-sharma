@@ -44,7 +44,7 @@ const UserPreferencesSchema = new mongoose.Schema(
 
     articlesCount: {
       type: Number,
-      default: 10,
+      default: 50,
       min: 1,
       max: 100,
     },
