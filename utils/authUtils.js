@@ -20,11 +20,12 @@ function generateToken(userId) {
   });
 }
 
-async function registerUser(email, password) {
+async function registerUser(name, email, password) {
   try {
     const newUser = UserModel({
-      password: await encryptPassword(password),
+      name,
       email,
+      password: await encryptPassword(password),
     });
 
     const savedUser = await newUser.save();
@@ -63,25 +64,9 @@ async function loginUser(email, password) {
   return { success: true, user, token };
 }
 
-async function findUserById(userId) {
-  try {
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return { success: false, error: "User not found" };
-    }
-    return { success: true, user };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.message,
-    };
-  }
-}
-
 module.exports = {
   encryptPassword,
   registerUser,
   loginUser,
   generateToken,
-  findUserById,
 };

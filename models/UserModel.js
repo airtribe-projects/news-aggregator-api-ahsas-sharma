@@ -3,48 +3,73 @@ const mongoose = require("mongoose");
 // sub schema to store the preferences for each user
 const UserPreferencesSchema = new mongoose.Schema(
   {
-    topics: {
+    keyword: {
+      type: [String],
+      default: [],
+    },
+    language: {
+      type: [String],
+      default: ["eng"],
+      validate: {
+        validator: function (arr) {
+          const allowed = ["eng", "hin", "kan", "spa", "ita", "deu", "zho"];
+          return (
+            Array.isArray(arr) &&
+            arr.length > 0 &&
+            arr.every((v) => allowed.includes(v))
+          );
+        },
+        message:
+          "language must contain one or more of: eng, hin, kan, spa, ita, deu, zho",
+      },
+    },
+    // articles with following keywords will be ignored
+    ignoreKeyword: {
       type: [String],
       default: [],
     },
 
-    language: {
+    // date - date article was published
+    // sourceImportance - based on rankings of various sources
+    // socialScore - based on activity of article on social media
+    articlesSortBy: {
       type: String,
-      default: "eng",
+      enum: ["date", "sourceImportance", "socialScore"],
+      default: "sourceImportance",
+    },
+    articlesSortByAsc: {
+      type: Boolean,
+      default: false,
     },
 
-    region: {
-      type: String,
-      default: null,
-    },
-
-    sortBy: {
-      type: String,
-      enum: ["date", "relevance"],
-      default: "date",
-    },
-
-    articlesPerPage: {
+    articlesCount: {
       type: Number,
       default: 10,
       min: 1,
-      max: 50,
+      max: 100,
     },
-
-    excludeDuplicates: {
-      type: Boolean,
-      default: true,
+    // maximum age of the articles
+    maxDaysBack: {
+      type: Number,
+      default: 1,
+      max: 30,
     },
-
-    sentiment: {
+    isDuplicateFilter: {
       type: String,
-      enum: ["any", "positive", "neutral", "negative"],
-      default: "any",
+      enum: ["skipDuplicates", "keepOnlyDuplicates", "keepAll"],
+      default: "skipDuplicates",
     },
-
-    blockedSources: {
-      type: [String],
-      default: [],
+    minSentiment: {
+      type: Number,
+      min: -1,
+      max: 1,
+      default: -1,
+    },
+    maxSentiment: {
+      type: Number,
+      min: -1,
+      max: 1,
+      default: 1,
     },
   },
   { _id: false, strict: "throw" }
@@ -52,6 +77,9 @@ const UserPreferencesSchema = new mongoose.Schema(
 
 const UserSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+    },
     email: {
       type: String,
       required: true,
