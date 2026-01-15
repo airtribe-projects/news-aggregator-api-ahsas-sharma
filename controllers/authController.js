@@ -1,46 +1,74 @@
-const UserModel = require("../models/UserModel");
-const { encryptPassword, verifyPassword } = require("../utils/authUtils");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const { registerUser, loginUser } = require("../utils/authUtils");
 
 require("dotenv").config();
 
 async function register(req, res) {
-  console.log("🚀 ~ register ~ register:", register);
   try {
     const { email, password } = req.body;
-    console.log("🚀 ~ register ~ req.body:", req.body);
     if (!email || !password) {
       return res.status(400).json({
         message: "Email and password are required",
       });
     }
 
-    const newUser = UserModel({
-      password: await encryptPassword(password),
-      email,
-    });
-    console.log("🚀 ~ register ~ newUser:", newUser);
+    const result = await registerUser(email, password);
+    if (!result.success) {
+      console.log(result.error);
 
-    const savedUser = await newUser.save();
-    console.log("🚀 ~ register ~ savedUser:", savedUser);
+      const errString = String(result.error);
+      if (errString.includes("E11000")) {
+        return res.status(400).json({
+          message: "Email already registered. Please login with your password.",
+        });
+      }
+
+      return res.status(400).json({ message: result.error });
+    }
+
     res.status(201).json({
-      message: "User registered successfully",
+      message: "User registered successfully!",
       user: {
-        id: savedUser._id,
-        email: savedUser.email,
-        createdAt: savedUser.createdAt,
+        id: result.user._id,
+        email: result.user.email,
+        createdAt: result.user.createdAt,
       },
     });
   } catch (error) {
-    console.log("🚀 ~ register ~ error:", error);
     res.status(500).json({
       message: "Internal server error",
     });
   }
 }
 
-async function login(req, res) {}
+async function login(req, res) {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
+    }
+
+    const result = await loginUser(email, password);
+
+    if (!result.success) {
+      return res.status(400).json({ message: result.error });
+    }
+
+    res.status(200).json({
+      message: "Logged in successfully!",
+      user: {
+        id: result.user._id,
+        email: result.user.email,
+      },
+      token: result.token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
 
 module.exports = {
   register,
