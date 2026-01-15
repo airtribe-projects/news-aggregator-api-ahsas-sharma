@@ -1,10 +1,12 @@
 const express = require("express");
 const app = express();
+const authRoute = require("./routes/authRoute");
 const newsRoute = require("./routes/newsRoute");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/news", newsRoute);
 app.use("/health", (req, res) => {
   res.json({
