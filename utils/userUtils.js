@@ -57,11 +57,6 @@ async function updateUserPreferences(user, changePayload) {
 }
 
 function formatUserPreferencesForRequest(preferences) {
-  console.log(
-    "🚀 ~ userUtils.js ~ formatUserPreferencesForRequest ~ preferences:",
-    preferences
-  );
-
   const requestBody = {
     action: "getArticles",
     resultType: "articles",

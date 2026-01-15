@@ -16,11 +16,9 @@ async function getNews(req, res) {
     }
 
     res.status(200).json({
-      newsResult,
+      news: newsResult.articles,
     });
   } catch (error) {
-----------------------------🚀");
-
     res.status(500).json({ error: "Internal server error" });
   }
 }
